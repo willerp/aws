@@ -29,7 +29,7 @@ $date=get-date -Format yyyy-MM-dd-HHmmss
             'CreationTime' = $_.CreationTime
         }
     } | Select-Object Region,LogGroupName,RetentionInDays,StoredBytes,CreationTime `
-        | Export-Csv -Path "cwlogs_log_groups_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        | Export-Csv -Path "cwlogs_log_groups_before_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 }
 
 # Setting the retention for all CW Logs log groups
@@ -55,5 +55,5 @@ $date=get-date -Format yyyy-MM-dd-HHmmss
             'CreationTime' = $_.CreationTime
         }
     } | Select-Object Region,LogGroupName,RetentionInDays,StoredBytes,CreationTime `
-        | Export-Csv -Path "cwlogs_log_groups_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        | Export-Csv -Path "cwlogs_log_groups_after_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 }
