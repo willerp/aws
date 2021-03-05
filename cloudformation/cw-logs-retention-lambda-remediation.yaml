@@ -1,0 +1,136 @@
+Parameters:
+
+  AWSRegion:
+    Type: String
+    Default: !Ref "AWS::Region"
+    Description: The current AWS region
+
+  RetentionInDays:
+    Type: Number
+    Default: 90
+    Description: The number of days for the CW Logs log group retention
+
+Resources:
+
+  CWLogsRetentionLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: This Lambda function sets a retention period to all CW Logs log groups according to the parameter RetentionInDays
+      Environment:
+        Variables:
+          awsRegion: !Ref AWSRegion
+          retentionInDays: !Ref RetentionInDays
+      FunctionName: !Sub ${AWSRegion}-cwlogs-groups-retention-function
+      Handler: lambda_function.lambda_handler
+      Role: !Ref LambdaRole
+      Runtime: python3.8
+      Timeout: 120
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          
+          # Array of non-compliant CloudWatch Logs log groups
+          nonCompliantLogGroups = []
+          
+          # Getting the AWS region from environment variables
+          awsRegion = os.environ['awsRegion']
+          
+          # Creating the CloudWatch Logs client
+          cwlclient = boto3.client('logs', region_name=awsRegion)
+          
+          # This function checks if the log groups have the correct retention period set
+          def evaluate(cwlgroups, retentionInDays):
+              
+              for group in cwlgroups:
+                  
+                  grpname = group['logGroupName']
+                  
+                  try:
+                      grpret = group['retentionInDays']
+                  except KeyError:
+                      grpret = 0
+                  
+                  # Adds the log group to the non-compliant array if the retention is not correct
+                  if grpret != retentionInDays:
+                      nonCompliantLogGroups.append(grpname)
+          
+          # This function sets the retention of non-compliant groups based on the retentionInDays environment variable
+          def remediate(nonCompliantLogGroups,retentionInDays):
+              
+              for group in nonCompliantLogGroups:
+                  cwlclient.put_retention_policy(
+                      logGroupName = group,
+                      retentionInDays = retentionInDays
+                  )
+          
+          def lambda_handler(event, context):
+              
+              retentionInDays = int(os.environ['retentionInDays'])
+              
+              cwlgroups = cwlclient.describe_log_groups()
+              evaluate(cwlgroups['logGroups'],retentionInDays)
+              
+              if 'nextToken' in cwlgroups:
+                  while True:
+                      cwlgroups = cwlclient.describe_log_groups(nextToken=cwlgroups['nextToken'])
+                      evaluate(cwlgroups['logGroups'],retentionInDays)
+                      if not 'nextToken' in cwlgroups:
+                          break
+              
+              print("Number of log groups to be remediated: " + str(len(nonCompliantLogGroups)))
+              remediate(nonCompliantLogGroups,retentionInDays)
+              
+              return "Complete."
+  
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Description: Role for the cwlogs-groups-retention lambda function
+      Policies: !Ref LambdaPolicy
+      RoleName: !Sub ${AWSRegion}-cwlogs-groups-retention-role
+    DependsOn: LambdaPolicy
+
+  LambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${AWSRegion}-cwlogs-groups-retention-policy
+      Roles:
+        - !Ref LambdaRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:DescribeLogGroups'
+              - 'logs:CreateLogGroup'
+              - 'logs:PutRetentionPolicy'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:logs:'
+                - !Ref 'AWS::Region'
+                - ':'
+                - !Ref 'AWS::AccountId'
+                - ':*'
+          - Effect: Allow
+            Action: 
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:logs:'
+                - !Ref 'AWS::Region'
+                - ':'
+                - !Ref 'AWS::AccountId'
+                - ':log-group:/aws/lambda/'
+                - !Ref CWLogsRetentionLambdaFunction
+                - ':*'
