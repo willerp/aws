@@ -1,10 +1,5 @@
 Parameters:
 
-  AWSRegion:
-    Type: String
-    Default: !Ref "AWS::Region"
-    Description: The current AWS region
-
   RetentionInDays:
     Type: Number
     Default: 90
@@ -18,11 +13,14 @@ Resources:
       Description: This Lambda function sets a retention period to all CW Logs log groups according to the parameter RetentionInDays
       Environment:
         Variables:
-          awsRegion: !Ref AWSRegion
+          awsRegion: !Ref "AWS::Region"
           retentionInDays: !Ref RetentionInDays
-      FunctionName: !Sub ${AWSRegion}-cwlogs-groups-retention-function
-      Handler: lambda_function.lambda_handler
-      Role: !Ref LambdaRole
+      FunctionName: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-cwlogs-groups-retention-function'
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
       Runtime: python3.8
       Timeout: 120
       Code:
@@ -82,7 +80,17 @@ Resources:
               remediate(nonCompliantLogGroups,retentionInDays)
               
               return "Complete."
+    DependsOn: LambdaRole
   
+  LambdaResourcePolicy:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CWLogsRetentionLambdaFunction
+      Principal: events.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !GetAtt EventRuleTriggerLambda.Arn
+
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -96,14 +104,18 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Description: Role for the cwlogs-groups-retention lambda function
-      Policies: !Ref LambdaPolicy
-      RoleName: !Sub ${AWSRegion}-cwlogs-groups-retention-role
-    DependsOn: LambdaPolicy
+      RoleName: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-cwlogs-groups-retention-role'
 
   LambdaPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub ${AWSRegion}-cwlogs-groups-retention-policy
+      PolicyName: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-cwlogs-groups-retention-policy'
       Roles:
         - !Ref LambdaRole
       PolicyDocument:
@@ -121,6 +133,19 @@ Resources:
                 - ':'
                 - !Ref 'AWS::AccountId'
                 - ':*'
+  
+  LambdaBasicPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-cwlogs-groups-retention-basic-policy'
+      Roles:
+        - !Ref LambdaRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
           - Effect: Allow
             Action: 
               - 'logs:CreateLogStream'
@@ -134,3 +159,21 @@ Resources:
                 - ':log-group:/aws/lambda/'
                 - !Ref CWLogsRetentionLambdaFunction
                 - ':*'
+    DependsOn:
+      - LambdaRole
+      - CWLogsRetentionLambdaFunction
+  
+  EventRuleTriggerLambda:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: This rule triggers a Lambda function to set CW Logs log groups retention
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-cwlogs-retention-trigger-lambda'
+      ScheduleExpression: 'cron(0 6 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Id: CWLogsRetentionLambdaFunction
+          Arn: !GetAtt CWLogsRetentionLambdaFunction.Arn
+    DependsOn: CWLogsRetentionLambdaFunction
