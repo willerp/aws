@@ -1,0 +1,126 @@
+Mappings:
+
+  TimezoneMap:
+    us-east-1:
+      timezone: America/New_York
+    us-east-2:
+      timezone: America/New_York
+    us-west-1:
+      timezone: America/Los_Angeles
+    us-west-2:
+      timezone: America/Los_Angeles
+    eu-central-1:
+      timezone: Europe/Berlin
+    eu-west-1:
+      timezone: Europe/Dublin
+    eu-west-3:
+      timezone: Europe/Paris
+    eu-north-1:
+      timezone: Europe/Stockholm
+    ap-northeast-1:
+      timezone: Asia/Tokyo
+
+Resources:
+
+  ResourceGroupAllWindowsServers:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Description: !Join
+        - ''
+        - - 'All Windows Servers within '
+          - !Ref 'AWS::Region'
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-WindowsServers'
+      ResourceQuery:
+        Query:
+          ResourceTypeFilters:
+            - AWS::EC2::Instance
+          TagFilters:
+            - Key: os
+              Values:
+                - windows
+            - Key: role
+              Values:
+                - bastion-server
+        Type: TAG_FILTERS_1_0
+  
+  SSMPatchBaseline:
+    Type: AWS::SSM::PatchBaseline
+    Properties:
+      ApprovalRules: 
+        PatchRules:
+          - ApproveAfterDays: 7
+            ComplianceLevel: CRITICAL
+            PatchFilterGroup:
+              PatchFilters:
+                - Key: MSRC_SEVERITY
+                  Values:
+                    - Critical
+                    - Important
+                - Key: CLASSIFICATION
+                  Values:
+                    - CriticalUpdates
+                    - SecurityUpdates
+      ApprovedPatchesComplianceLevel: CRITICAL
+      Description: My default Windows Patch Baseline
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-MyDefaultWindowsPatchBaseline'
+      OperatingSystem: WINDOWS
+  
+  SSMMaintenanceWindow:
+    Type: AWS::SSM::MaintenanceWindow
+    Properties:
+      AllowUnassociatedTargets: true
+      Cutoff: 0
+      Description: My default Windows maintenance window
+      Duration: 2
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-MyDefaultWindowsMaintenanceWindow'
+      Schedule: cron(30 21 ? * MON *)
+      ScheduleTimezone: !FindInMap [TimezoneMap, !Ref 'AWS::Region', timezone]
+  
+  SSMMaintenanceWindowTarget:
+    Type: AWS::SSM::MaintenanceWindowTarget
+    Properties:
+      Description: All Windows Servers
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-WindowsServers'
+      ResourceType: RESOURCE_GROUP
+      Targets: 
+        - Key: resource-groups:Name
+          Values:
+            - !Ref ResourceGroupAllWindowsServers
+      WindowId: !Ref SSMMaintenanceWindow
+  
+  SSMMaintenanceWindowTask:
+    Type: AWS::SSM::MaintenanceWindowTask
+    Properties:
+      Description: Apply patch
+      MaxConcurrency: '50%'
+      MaxErrors: '50%'
+      Name: !Join
+        - ''
+        - - !Ref 'AWS::Region'
+          - '-MyDefaultWindowsPatchTask'
+      Priority: 5
+      Targets:
+        - Key: WindowTargetIds
+          Values:
+            - !Ref SSMMaintenanceWindowTarget
+      TaskArn: AWS-RunPatchBaseline
+      TaskInvocationParameters: 
+        MaintenanceWindowRunCommandParameters:
+          Parameters: 
+            Operation: [Install]
+            SnapshotId: ['{{WINDOW_EXECUTION_ID}}']
+          TimeoutSeconds: 600
+      TaskType: RUN_COMMAND
+      WindowId: !Ref SSMMaintenanceWindow
