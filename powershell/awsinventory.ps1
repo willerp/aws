@@ -36,7 +36,7 @@ $accinfo = @(
 )
 
 #Store profiles accounts
-$accinfo | ForEach-Object {
+$accinfo | foreach {
     Set-AWSCredential -AccessKey $_.AccessKey -SecretKey $_.SecretKey -StoreAs $_.Profile
 }
 
@@ -65,7 +65,7 @@ foreach ($acc in $accinfo) {
                 'CustomerGatewayId' = $cgw.CustomerGatewayId
                 'IpAddress' = $cgw.IpAddress
                 'BgpAsn' = $cgw.BgpAsn
-            } | select AccountName,AccountId,Region,Name,CustomerGatewayId,IpAddress,BgpAsn `
+            } | Select-Object AccountName,AccountId,Region,Name,CustomerGatewayId,IpAddress,BgpAsn `
                 | Export-Csv -Path "$($path)awsinventory_cgw_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         
@@ -82,7 +82,7 @@ foreach ($acc in $accinfo) {
                 'AmazonSideAsn' = $vgw.AmazonSideAsn
                 'VpcAttachmentsState' = $vgw.VpcAttachments.State.Value
                 'VpcAttachmentsVpcId' = $vgw.VpcAttachments.VpcId
-            } | select AccountName,AccountId,Region,Name,VirtualPrivateGatewayId,State,AmazonSideAsn,VpcAttachmentsState,VpcAttachmentsVpcId `
+            } | Select-Object AccountName,AccountId,Region,Name,VirtualPrivateGatewayId,State,AmazonSideAsn,VpcAttachmentsState,VpcAttachmentsVpcId `
                 | Export-Csv -Path "$($path)awsinventory_vgw_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         
@@ -103,7 +103,7 @@ foreach ($acc in $accinfo) {
                 'Vlan' = $dx.Vlan
                 'AwsDevice' = $dx.AwsDevice
                 'AwsDeviceV2' = $dx.AwsDeviceV2
-            } | select AccountName,AccountId,Region,ConnectionId,ConnectionName,ConnectionState,Bandwidth,OwnerAccount,Location,PartnerName,Vlan,AwsDevice,AwsDeviceV2  `
+            } | Select-Object AccountName,AccountId,Region,ConnectionId,ConnectionName,ConnectionState,Bandwidth,OwnerAccount,Location,PartnerName,Vlan,AwsDevice,AwsDeviceV2  `
                 | Export-Csv -Path "$($path)awsinventory_dx_conn_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
 
@@ -119,7 +119,7 @@ foreach ($acc in $accinfo) {
                 'DirectConnectGatewayState' = $dxgtw.DirectConnectGatewayState
                 'OwnerAccount' = $dxgtw.OwnerAccount
                 'AmazonSideAsn' = $dxgtw.AmazonSideAsn
-            } | select AccountName,AccountId,Region,DirectConnectGatewayId,DirectConnectGatewayName,DirectConnectGatewayState,OwnerAccount,AmazonSideAsn  `
+            } | Select-Object AccountName,AccountId,Region,DirectConnectGatewayId,DirectConnectGatewayName,DirectConnectGatewayState,OwnerAccount,AmazonSideAsn  `
                 | Export-Csv -Path "$($path)awsinventory_dx_gtw_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
             #Get-DCGatewayAssociation -Region $region -DirectConnectGatewayId $dxgtw.DirectConnectGatewayId
             #Get-DCGatewayAttachment -Region $region -DirectConnectGatewayId $dxgtw.DirectConnectGatewayId
@@ -147,7 +147,7 @@ foreach ($acc in $accinfo) {
                 'CustomerAddress' = $vif.CustomerAddress
                 'DirectConnectGatewayId' = $vif.DirectConnectGatewayId
                 'Mtu' = $vif.Mtu
-            } | select AccountName,AccountId,OwnerAccount,VirtualInterfaceId,VirtualInterfaceName,VirtualGatewayId,Region,VirtualInterfaceState, `
+            } | Select-Object AccountName,AccountId,OwnerAccount,VirtualInterfaceId,VirtualInterfaceName,VirtualGatewayId,Region,VirtualInterfaceState, `
                 VirtualInterfaceType,Vlan,AddressFamily,AmazonAddress,AmazonSideAsn,Asn,ConnectionId,CustomerAddress,DirectConnectGatewayId,Mtu `
                 | Export-Csv -Path "$($path)awsinventory_dx_vif_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
@@ -165,7 +165,7 @@ foreach ($acc in $accinfo) {
                     'CidrBlock' = $_.CidrBlock
                     'IsDefault' = $vpc.IsDefault
                 }
-            }  | select AccountName,AccountId,Region,VPCId,VPCName,CidrBlock,IsDefault | Export-Csv -Path "$($path)awsinventory_vpcs_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            }  | Select-Object AccountName,AccountId,Region,VPCId,VPCName,CidrBlock,IsDefault | Export-Csv -Path "$($path)awsinventory_vpcs_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         
         # Subnets
@@ -180,7 +180,7 @@ foreach ($acc in $accinfo) {
                 'CidrBlock' = $subnet.CidrBlock
                 'AvailabilityZone' = $subnet.AvailabilityZone
                 'VpcId' = $subnet.VpcId
-            } | select AccountName,AccountId,Region,SubnetId,SubnetName,CidrBlock,AvailabilityZone,VpcId | Export-Csv -Path "$($path)awsinventory_subnets_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            } | Select-Object AccountName,AccountId,Region,SubnetId,SubnetName,CidrBlock,AvailabilityZone,VpcId | Export-Csv -Path "$($path)awsinventory_subnets_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         
         # EC2 instances
@@ -214,7 +214,7 @@ foreach ($acc in $accinfo) {
                     'PublicDnsName' = $_.PublicDnsName
                     'PublicIPAddress' = $_.PublicIPAddress
                 }
-            } | select AccountName,AccountId,Region,VpcId,VPCName,InstanceId,InstanceName,Hostname,Company,Environment, `
+            } | Select-Object AccountName,AccountId,Region,VpcId,VPCName,InstanceId,InstanceName,Hostname,Company,Environment, `
                 AppName,BusinessUnit,PlatformTag,LaunchTime,State,Architecture,Hypervisor,Platform,InstanceType,SubnetId, `
                 PrivateDnsName,PrivateIpAddress,PublicDnsName,PublicIPAddress  `
                 | Export-Csv -Path "$($path)awsinventory_ec2_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
@@ -242,7 +242,7 @@ foreach ($acc in $accinfo) {
                 'BusinessUnit' = ($_.Tags | Where-Object {$_.Key -eq 'business-unit'}).Value
                 'PlatformTag' = ($_.Tags | Where-Object {$_.Key -eq 'platform'}).Value
             }
-        } | select AccountName,AccountId,Region,VolumeId,VolumeType,Size,AvailabilityZone,State,Attachments, `
+        } | Select-Object AccountName,AccountId,Region,VolumeId,VolumeType,Size,AvailabilityZone,State,Attachments, `
             Encrypted,KmsKeyId,Name,Company,Environment,AppName,BusinessUnit,PlatformTag  `
             | Export-Csv -Path "$($path)awsinventory_ebs_volumes_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 
@@ -260,7 +260,7 @@ foreach ($acc in $accinfo) {
                 'CreatedTime' = $_.CreatedTime
                 'Scheme' = $_.Scheme
             }
-        } | select AccountName,AccountId,Region,VPCId,State,DNSName,CreatedTime,Scheme | Export-Csv -Path "$($path)awsinventory_classicelb_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        } | Select-Object AccountName,AccountId,Region,VPCId,State,DNSName,CreatedTime,Scheme | Export-Csv -Path "$($path)awsinventory_classicelb_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         
         # Application ELBs
         Write-Host "Gathering Application ELBs for region $region"
@@ -275,7 +275,7 @@ foreach ($acc in $accinfo) {
                 'CreatedTime' = $_.CreatedTime
                 'Scheme' = $_.Scheme
             }
-        } | select AccountName,AccountId,Region,VPCId,State,DNSName,CreatedTime,Scheme | Export-Csv -Path "$($path)awsinventory_appelb_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        } | Select-Object AccountName,AccountId,Region,VPCId,State,DNSName,CreatedTime,Scheme | Export-Csv -Path "$($path)awsinventory_appelb_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
     
         # RDS Instances
         Write-Host "Gathering RDS instances for region $region"
@@ -298,7 +298,7 @@ foreach ($acc in $accinfo) {
                 'EngineVersion' = $_.EngineVersion
                 'InstanceCreateTime' = $_.InstanceCreateTime
             }
-        } | select AccountName,AccountId,Region,DBInstanceIdentifier,DBName,AvailabilityZone,DBInstanceClass, `
+        } | Select-Object AccountName,AccountId,Region,DBInstanceIdentifier,DBName,AvailabilityZone,DBInstanceClass, `
             DBInstanceStatus,AllocatedStorage,DBInstancePort,MasterUsername,PubliclyAccessible, `
             ReadReplicaSourceDBInstaceIdentifier,Engine,EngineVersion,InstanceCreateTime  `
             | Export-Csv -Path "$($path)awsinventory_rds_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
@@ -317,7 +317,7 @@ foreach ($acc in $accinfo) {
                     'NumberOfMountTargets' = $_.NumberOfMountTargets
                     'CreationTime' = $_.CreationTime
                 }
-            } | select AccountName,AccountId,Region,Name,FileSystemId,SizeInBytes,NumberOfMountTargets,CreationTime | Export-Csv -Path "$($path)awsinventory_efs_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            } | Select-Object AccountName,AccountId,Region,Name,FileSystemId,SizeInBytes,NumberOfMountTargets,CreationTime | Export-Csv -Path "$($path)awsinventory_efs_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         catch { }
     
@@ -336,7 +336,7 @@ foreach ($acc in $accinfo) {
                 'StateUpdatedTimestamp' = $_.StateUpdatedTimestamp
                 'Dimensions' = $_.Dimensions.Name+':'+$_.Dimensions.Value
             }
-        } | select AccountName,AccountId,Region,AlarmName,Namespace,MetricName,AlarmDescription,StateValue,StateUpdatedTimestamp,Dimensions  `
+        } | Select-Object AccountName,AccountId,Region,AlarmName,Namespace,MetricName,AlarmDescription,StateValue,StateUpdatedTimestamp,Dimensions  `
             | Export-Csv -Path "$($path)awsinventory_cwalarms_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
     
         # KMS
@@ -349,7 +349,7 @@ foreach ($acc in $accinfo) {
                 'KeyArn' = $_.KeyArn
                 'KeyId' = $_.KeyId
             }
-        } | select AccountName,AccountId,Region,KeyArn,KeyId | Export-Csv -Path "$($path)awsinventory_kms_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        } | Select-Object AccountName,AccountId,Region,KeyArn,KeyId | Export-Csv -Path "$($path)awsinventory_kms_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
     
         # VPC Peering
         Write-Host "Gathering VPC Peerings for region $region"
@@ -369,7 +369,7 @@ foreach ($acc in $accinfo) {
                 'AccepterOwner' = $_.AccepterVpcInfo.OwnerId
 
             }
-        } | select AccountName,AccountId,Region,Name,VpcPeeringConnectionId,Status,RequesterVPC,AccepterVPC, `
+        } | Select-Object AccountName,AccountId,Region,Name,VpcPeeringConnectionId,Status,RequesterVPC,AccepterVPC, `
             RequesterCidr,AccepterCidr,RequesterOwner,AccepterOwner  `
             | Export-Csv -Path "$($path)awsinventory_peering_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 
@@ -384,7 +384,7 @@ foreach ($acc in $accinfo) {
                     'Region' = $region
                     'ECSCluster' = $cluster
                     'ECSTask' = $task
-                } | select AccountName,AccountId,Region,ECSCluster,ECSTask | Export-Csv -Path "$($path)awsinventory_ecstasks_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+                } | Select-Object AccountName,AccountId,Region,ECSCluster,ECSTask | Export-Csv -Path "$($path)awsinventory_ecstasks_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
             }
 
             # ECS Services
@@ -395,7 +395,7 @@ foreach ($acc in $accinfo) {
                     'Region' = $region
                     'ECSCluster' = $cluster
                     'ECSService' = $service
-                } | select AccountName,AccountId,Region,ECSCluster,ECSService | Export-Csv -Path "$($path)awsinventory_ecsservices_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+                } | Select-Object AccountName,AccountId,Region,ECSCluster,ECSService | Export-Csv -Path "$($path)awsinventory_ecsservices_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
             }
 
             # ECS Clusters
@@ -404,7 +404,7 @@ foreach ($acc in $accinfo) {
                 'AccountId' = $accid
                 'Region' = $region
                 'ECSCluster' = $cluster
-            } | select AccountName,AccountId,Region,ECSCluster | Export-Csv -Path "$($path)awsinventory_ecsclusters_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            } | Select-Object AccountName,AccountId,Region,ECSCluster | Export-Csv -Path "$($path)awsinventory_ecsclusters_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
 
         # Elastic Beanstalk resources
@@ -425,7 +425,7 @@ foreach ($acc in $accinfo) {
                     'HealthStatus' = $ebenv.HealthStatus
                     'PlatformArn' = $ebenv.PlatformArn
                     'SolutionsStackName' = $ebenv.SolutionsStackName
-                } | select AccountName,AccountId,Region,ApplicationName,EnvironmentId,EnvironmentName,CNAME, `
+                } | Select-Object AccountName,AccountId,Region,ApplicationName,EnvironmentId,EnvironmentName,CNAME, `
                     EndpointURL,Health,HealthStatus,PlatformArn,SolutionsStackName  `
                     | Export-Csv -Path "$($path)awsinventory_ebenvironments_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
             }
@@ -437,7 +437,7 @@ foreach ($acc in $accinfo) {
                 'Region' = $region
                 'ApplicationName' = $ebapp.ApplicationName
                 'CreateDate' = $ebapp.DateCreated
-            } | select AccountName,AccountId,Region,ApplicationName,CreateDate | Export-Csv -Path "$($path)awsinventory_ebapplications_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            } | Select-Object AccountName,AccountId,Region,ApplicationName,CreateDate | Export-Csv -Path "$($path)awsinventory_ebapplications_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 
         }
 
@@ -454,55 +454,85 @@ foreach ($acc in $accinfo) {
             'BucketName' = $_.BucketName
             'CreationDate' = $_.CreationDate
         }
-    } | select AccountName,AccountId,BucketName,CreationDate | Export-Csv -Path "$($path)awsinventory_s3_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+    } | Select-Object AccountName,AccountId,BucketName,CreationDate | Export-Csv -Path "$($path)awsinventory_s3_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
     
     Write-Host
     Write-Host "Gathering IAM Users"
     Write-Host
     # IAM Users
     foreach ($user in Get-IAMUsers) {
-                    
+    
         try {$pwdage=(New-TimeSpan -Start (Get-Date) -End ((Get-IAMLoginProfile -UserName $user.UserName).CreateDate)).Days*(-1)}
-        catch {$pwdage='None'}
+        catch {$pwdage='n/a'}
         
+        # IAM Users Key Age
+        $key1LastUsed = $key1Id = $key1Status = $key1CreateDate = $key1KeyAge = $key1KeyLastUsedDate = $key1KeyLastUsedRegion = $key1KeyLastUsedServiceName = 'n/a'
+        $key2LastUsed = $key2Id = $key2Status = $key2CreateDate = $key2KeyAge = $key2KeyLastUsedDate = $key2KeyLastUsedRegion = $key2KeyLastUsedServiceName = 'n/a'
+        if ((Get-IAMAccessKey -UserName $user.UserName | Measure-Object).Count -ne 0) {
+            $keycount=1
+            foreach ($key in (Get-IAMAccessKey -UserName $user.UserName)) {
+                if ($keycount -eq 1) {
+                    $key1Id = $key.AccessKeyId
+                    $key1Status = $key.Status
+                    $key1CreateDate = $key.CreateDate
+                    $key1KeyAge = (New-TimeSpan -Start (Get-Date) -End $key.CreateDate).Days*(-1)
+                    $key1LastUsed = (Get-IAMAccessKeyLastUsed -AccessKeyId $key.AccessKeyId).AccessKeyLastUsed
+                    $key1KeyLastUsedDate = $key1LastUsed.LastUsedDate
+                    $key1KeyLastUsedRegion = $key1LastUsed.Region
+                    $key1KeyLastUsedServiceName = $key1LastUsed.ServiceName
+                    $keycount++
+                } else {
+                    $key2Id = $key.AccessKeyId
+                    $key2Status = $key.Status
+                    $key2CreateDate = $key.CreateDate
+                    $key2KeyAge = (New-TimeSpan -Start (Get-Date) -End $key.CreateDate).Days*(-1)
+                    $key2LastUsed = (Get-IAMAccessKeyLastUsed -AccessKeyId $key.AccessKeyId).AccessKeyLastUsed
+                    $key2KeyLastUsedDate = $key2lastused.LastUsedDate
+                    $key2KeyLastUsedRegion = $key2lastused.Region
+                    $key2KeyLastUsedServiceName = $key2lastused.ServiceName
+                }
+            }
+        }
+    
         # IAM Users Password Age & MFA
         New-Object -TypeName PSObject -Property @{
             'AccountName' = $accname
             'AccountId' = $accid
+            'UserPath' = $user.Path
             'UserName' = $user.UserName
             'CreateDate' = $user.CreateDate
             'PasswordAge' = $pwdage
             'PasswordLastUsed' = $user.PasswordLastUsed
+            'PasswordLastUsedDays' = (New-TimeSpan -Start (Get-Date) -End $user.PasswordLastUsed).Days*(-1)
             'MFA' = if (Get-IAMMFADevice -UserName $user.UserName) {'Enabled'} else {'Disabled'}
-        } | select AccountName,AccountId,UserName,CreateDate,PasswordAge,PasswordLastUsed,MFA  `
-            | Export-Csv -Path "$($path)awsinventory_iamusers_password_mfa_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            'Key1Id' = $key1Id
+            'Key1Status' = $key1Status
+            'Key1CreateDate' = $key1CreateDate
+            'Key1KeyAge' = $key1KeyAge
+            'Key1KeyLastUsedDate' = $key1KeyLastUsedDate
+            'Key1KeyLastUsedRegion' = $key1KeyLastUsedRegion
+            'Key1KeyLastUsedServiceName' = $key1KeyLastUsedServiceName
+            'Key2Id' = $key2Id
+            'Key2Status' = $key2Status
+            'Key2CreateDate' = $key2CreateDate
+            'Key2KeyAge' = $key2KeyAge
+            'Key2KeyLastUsedDate' = $key2KeyLastUsedDate
+            'Key2KeyLastUsedRegion' = $key2KeyLastUsedRegion
+            'Key2KeyLastUsedServiceName' = $key2KeyLastUsedServiceName
+        } | Select-Object UserPath,UserName,CreateDate,PasswordAge,PasswordLastUsed,PasswordLastUsedDays,MFA,  `
+            Key1Id,Key1Status,Key1CreateDate,Key1KeyAge,Key1KeyLastUsedDate,Key1KeyLastUsedRegion,Key1KeyLastUsedServiceName,  `
+            Key2Id,Key2Status,Key2CreateDate,Key2KeyAge,Key2KeyLastUsedDate,Key2KeyLastUsedRegion,Key2KeyLastUsedServiceName
+            | Export-Csv -Path "$($path)awsinventory_iamusers_password_mfa_keys_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         
         # IAM Users Group Membership
-        foreach ($group in ((Get-IAMGroupForUser -UserName $user.UserName) | Sort)) {
+        foreach ($group in ((Get-IAMGroupForUser -UserName $user.UserName))) {
             New-Object -TypeName PSObject -Property @{
                 'AccountName' = $accname
                 'AccountId' = $accid
+                'UserPath' = $user.Path
                 'UserName' = $user.UserName
                 'Group' = $group.GroupName
-            } | select AccountName,AccountId,UserName,Group | Export-Csv -Path "$($path)awsinventory_iamusers_groups_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
-        }
-        
-        # IAM Users Key Age
-        foreach ($key in (Get-IAMAccessKey -UserName $user.UserName)) {
-            $keylastused = (Get-IAMAccessKeyLastUsed -AccessKeyId $key.AccessKeyId).AccessKeyLastUsed
-            New-Object -TypeName PSObject -Property @{
-                'AccountName' = $accname
-                'AccountId' = $accid
-                'UserName' = $user.UserName
-                'AccessKeyId' = $key.AccessKeyId
-                'Status' = $key.Status
-                'CreateDate' = $key.CreateDate
-                'KeyAge' = (New-TimeSpan -Start (Get-Date) -End $key.CreateDate).Days*(-1)
-                'KeyLastUsedDate' = $keylastused.LastUsedDate
-                'KeyLastUsedRegion' = $keylastused.Region
-                'KeyLastUsedServiceName' = $keylastused.ServiceName
-            } | select AccountName,AccountId,UserName,AccessKeyId,Status,CreateDate,KeyAge,KeyLastUsedDate,KeyLastUsedRegion,KeyLastUsedServiceName  `
-                | Export-Csv -Path "$($path)awsinventory_iamusers_keys_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+            } | Select-Object UserPath,UserName,Group | Export-Csv -Path "$($path)awsinventory_iamusers_groups_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
     }
 
@@ -521,7 +551,7 @@ foreach ($acc in $accinfo) {
                 'PrivateZone' = $hostedzone.Config.PrivateZone
                 'RecordSetName' = $recordset.Name
                 'RecordSetType' = $recordset.Type
-            } | select AccountName,AccountId,ZoneId,HostedZoneName,PrivateZone,RecordSetName,RecordSetType  `
+            } | Select-Object AccountName,AccountId,ZoneId,HostedZoneName,PrivateZone,RecordSetName,RecordSetType  `
                 | Export-Csv -Path "$($path)awsinventory_r53recordsets_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
         }
         # R53 Hosted Zones
@@ -531,7 +561,7 @@ foreach ($acc in $accinfo) {
             'ZoneId' = $hostedzone.Id
             'HostedZoneName' = $hostedzone.Name
             'PrivateZone' = $hostedzone.Config.PrivateZone
-        } | select AccountName,AccountId,ZoneId,HostedZoneName,PrivateZone | Export-Csv -Path "$($path)awsinventory_r53hostedzones_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
+        } | Select-Object AccountName,AccountId,ZoneId,HostedZoneName,PrivateZone | Export-Csv -Path "$($path)awsinventory_r53hostedzones_$($date).csv" -Encoding ascii -NoTypeInformation -Append -Force
 
     }
 
