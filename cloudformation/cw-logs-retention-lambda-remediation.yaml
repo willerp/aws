@@ -88,7 +88,6 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref CWLogsRetentionLambdaFunction
       Principal: events.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
       SourceArn: !GetAtt EventRuleTriggerLambda.Arn
 
   LambdaRole:
