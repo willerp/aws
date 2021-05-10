@@ -477,6 +477,7 @@ foreach ($acc in $accinfo) {
                     $key1CreateDate = $key.CreateDate
                     $key1KeyAge = (New-TimeSpan -Start (Get-Date) -End $key.CreateDate).Days*(-1)
                     $key1LastUsed = (Get-IAMAccessKeyLastUsed -AccessKeyId $key.AccessKeyId).AccessKeyLastUsed
+                    $key1LastUsedDays = (New-TimeSpan -Start (Get-Date) -End $key1KeyLastUsedDate).Days*(-1)
                     $key1KeyLastUsedDate = $key1LastUsed.LastUsedDate
                     $key1KeyLastUsedRegion = $key1LastUsed.Region
                     $key1KeyLastUsedServiceName = $key1LastUsed.ServiceName
@@ -487,6 +488,7 @@ foreach ($acc in $accinfo) {
                     $key2CreateDate = $key.CreateDate
                     $key2KeyAge = (New-TimeSpan -Start (Get-Date) -End $key.CreateDate).Days*(-1)
                     $key2LastUsed = (Get-IAMAccessKeyLastUsed -AccessKeyId $key.AccessKeyId).AccessKeyLastUsed
+                    $key2LastUsedDays = (New-TimeSpan -Start (Get-Date) -End $key2KeyLastUsedDate).Days*(-1)
                     $key2KeyLastUsedDate = $key2lastused.LastUsedDate
                     $key2KeyLastUsedRegion = $key2lastused.Region
                     $key2KeyLastUsedServiceName = $key2lastused.ServiceName
@@ -509,6 +511,7 @@ foreach ($acc in $accinfo) {
             'Key1Status' = $key1Status
             'Key1CreateDate' = $key1CreateDate
             'Key1KeyAge' = $key1KeyAge
+            'Key1LastUsedDays' = $key1LastUsedDays
             'Key1KeyLastUsedDate' = $key1KeyLastUsedDate
             'Key1KeyLastUsedRegion' = $key1KeyLastUsedRegion
             'Key1KeyLastUsedServiceName' = $key1KeyLastUsedServiceName
@@ -516,6 +519,7 @@ foreach ($acc in $accinfo) {
             'Key2Status' = $key2Status
             'Key2CreateDate' = $key2CreateDate
             'Key2KeyAge' = $key2KeyAge
+            'Key2LastUsedDays' = $key2LastUsedDays
             'Key2KeyLastUsedDate' = $key2KeyLastUsedDate
             'Key2KeyLastUsedRegion' = $key2KeyLastUsedRegion
             'Key2KeyLastUsedServiceName' = $key2KeyLastUsedServiceName
